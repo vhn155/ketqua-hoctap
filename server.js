@@ -1,3 +1,4 @@
+
 // server.js
 const express = require("express");
 const cors = require("cors");
@@ -7,7 +8,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// ===== ROUTES =====
+// ===== API ROUTES =====
 const hocSinhRoutes = require("./routes/hocSinh");
 const authRoutes = require("./routes/auth");
 
@@ -18,7 +19,7 @@ app.use("/api/auth", authRoutes);
 const clientBuildPath = path.join(__dirname, "client", "build");
 app.use(express.static(clientBuildPath));
 
-// Bất kỳ route nào khác → trả về React index.html
+// Nếu không phải API → trả về index.html
 app.get("*", (req, res) => {
   res.sendFile(path.join(clientBuildPath, "index.html"));
 });
