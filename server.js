@@ -1,82 +1,77 @@
+// server.js
 const express = require("express");
 const cors = require("cors");
-const path = require("path");
 const fs = require("fs");
+const path = require("path");
 const { v4: uuidv4 } = require("uuid");
 
 const app = express();
-app.use(express.json());
 app.use(cors());
+app.use(express.json());
 
-// ===== USERS AUTH =====
-const usersFile = path.join(__dirname, "users.json");
+// ===== FILES =====
+const HOCSINH_FILE = path.join(__dirname, "data.json");
+const USERS_FILE = path.join(__dirname, "users.json");
+
+// ===== HELPER =====
+const readData = (file) => JSON.parse(fs.readFileSync(file, "utf8"));
+const writeData = (file, data) => fs.writeFileSync(file, JSON.stringify(data, null, 2));
+
+// ===== AUTH =====
 app.post("/api/auth/login", (req, res) => {
   const { username, password } = req.body;
-  const users = JSON.parse(fs.readFileSync(usersFile, "utf-8"));
+  const users = readData(USERS_FILE);
   const user = users.find(u => u.username === username && u.password === password);
-  if (user) {
-    res.json({ success: true, username: user.username });
-  } else {
-    res.status(401).json({ success: false, message: "Sai username hoặc password" });
-  }
+  if (!user) return res.status(401).json({ message: "Sai tài khoản hoặc mật khẩu" });
+  res.json({ username: user.username });
 });
 
-// ===== HOC SINH CRUD =====
-const hocSinhFile = path.join(__dirname, "data.json");
+app.post("/api/auth/logout", (req, res) => res.json({ message: "Logged out" }));
 
-// GET all + search
+// ===== HOCSINH CRUD =====
 app.get("/api/hocSinh", (req, res) => {
-  const data = JSON.parse(fs.readFileSync(hocSinhFile, "utf-8"));
   const { search } = req.query;
+  let data = readData(HOCSINH_FILE);
   if (search) {
-    const filtered = data.filter(h => h.ten.toLowerCase().includes(search.toLowerCase()));
-    res.json(filtered);
-  } else {
-    res.json(data);
+    const key = search.toLowerCase();
+    data = data.filter(h => h.ten.toLowerCase().includes(key));
   }
+  res.json(data);
 });
 
-// POST add
 app.post("/api/hocSinh", (req, res) => {
   const { ten, diemA, diemB, diemC } = req.body;
-  const data = JSON.parse(fs.readFileSync(hocSinhFile, "utf-8"));
+  const data = readData(HOCSINH_FILE);
   const newHS = { id: uuidv4(), ten, diemA, diemB, diemC };
   data.push(newHS);
-  fs.writeFileSync(hocSinhFile, JSON.stringify(data, null, 2));
+  writeData(HOCSINH_FILE, data);
   res.json(newHS);
 });
 
-// PUT edit
 app.put("/api/hocSinh/:id", (req, res) => {
   const { id } = req.params;
   const { ten, diemA, diemB, diemC } = req.body;
-  const data = JSON.parse(fs.readFileSync(hocSinhFile, "utf-8"));
+  const data = readData(HOCSINH_FILE);
   const index = data.findIndex(h => h.id === id);
-  if (index !== -1) {
-    data[index] = { id, ten, diemA, diemB, diemC };
-    fs.writeFileSync(hocSinhFile, JSON.stringify(data, null, 2));
-    res.json(data[index]);
-  } else {
-    res.status(404).json({ message: "Học sinh không tồn tại" });
-  }
+  if (index === -1) return res.status(404).json({ message: "Không tìm thấy học sinh" });
+  data[index] = { id, ten, diemA, diemB, diemC };
+  writeData(HOCSINH_FILE, data);
+  res.json(data[index]);
 });
 
-// DELETE
 app.delete("/api/hocSinh/:id", (req, res) => {
   const { id } = req.params;
-  let data = JSON.parse(fs.readFileSync(hocSinhFile, "utf-8"));
+  let data = readData(HOCSINH_FILE);
   data = data.filter(h => h.id !== id);
-  fs.writeFileSync(hocSinhFile, JSON.stringify(data, null, 2));
-  res.json({ success: true });
+  writeData(HOCSINH_FILE, data);
+  res.json({ message: "Đã xóa" });
 });
 
 // ===== SERVE REACT BUILD =====
 const clientBuildPath = path.join(__dirname, "client", "build");
 app.use(express.static(clientBuildPath));
-app.get("*", (req, res) => {
-  res.sendFile(path.join(clientBuildPath, "index.html"));
-});
+app.get("*", (req, res) => res.sendFile(path.join(clientBuildPath, "index.html")));
 
 // ===== START SERVER =====
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

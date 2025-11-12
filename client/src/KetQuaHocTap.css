@@ -1,19 +1,48 @@
-.card {
-  max-width: 600px;
-  margin: 20px auto;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-  background: #fff;
+
+/* KetQuaHocTap.css */
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding: 10px;
 }
-.card h2 { text-align:center; }
-input { margin: 5px; padding: 8px; width: calc(100% - 20px); }
-button { margin:5px; padding: 8px 12px; border:none; border-radius:5px; background:#007bff; color:#fff; cursor:pointer; }
-button:hover { opacity:0.9; }
-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-th, td { border:1px solid #ccc; padding: 5px; text-align:center; }
-@media (max-width:600px) {
-  .card { padding:10px; }
-  input { width:100%; }
-  table { font-size:12px; }
+.card {
+  background: #fff;
+  padding: 20px;
+  margin: 10px 0;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.table th, .table td {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background: #007bff;
+  color: white;
+}
+button:hover { opacity: 0.9; }
+input {
+  padding: 6px 10px;
+  margin: 4px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+.error { color: red; margin-bottom: 10px; }
+@media(max-width:600px){
+  .table th,.table td{font-size:12px;}
+  input, button{width:100%; margin:4px 0;}
 }

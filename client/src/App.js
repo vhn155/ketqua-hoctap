@@ -1,4 +1,5 @@
 
+// src/App.js
 import React, { useState } from "react";
 import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./Login";
@@ -11,7 +12,7 @@ function App() {
     <HashRouter>
       <Routes>
         <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Login setUser={setUser} />} />
-        <Route path="/dashboard/*" element={user ? <Dashboard /> : <Navigate to="/" />} />
+        <Route path="/dashboard/*" element={user ? <Dashboard user={user} setUser={setUser} /> : <Navigate to="/" />} />
       </Routes>
     </HashRouter>
   );

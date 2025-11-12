@@ -1,3 +1,4 @@
+// src/Login.jsx
 import React, { useState } from "react";
 
 const Login = ({ setUser }) => {
@@ -5,27 +6,31 @@ const Login = ({ setUser }) => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleLogin = async () => {
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password })
-    });
-    if (res.ok) {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
+      if (!res.ok) throw new Error("Sai tài khoản hoặc mật khẩu");
       const data = await res.json();
-      setUser(data.username);
-    } else {
-      setError("Sai username hoặc password");
+      setUser(data);
+    } catch (err) {
+      setError(err.message);
     }
   };
 
   return (
-    <div className="login-card">
+    <div className="card login-card">
       <h2>Đăng nhập</h2>
-      <input placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} />
-      <input placeholder="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} />
-      <button onClick={handleLogin}>Login</button>
-      {error && <p className="error">{error}</p>}
+      {error && <div className="error">{error}</div>}
+      <form onSubmit={handleSubmit}>
+        <input placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} />
+        <input placeholder="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} />
+        <button type="submit">Login</button>
+      </form>
     </div>
   );
 };
