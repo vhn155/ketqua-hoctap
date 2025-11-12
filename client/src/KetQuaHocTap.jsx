@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import "./KetQuaHocTap.css";
+
 
 const KetQuaHocTap = () => {
   const [hocSinh, setHocSinh] = useState([]);

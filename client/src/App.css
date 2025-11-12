@@ -1,21 +1,225 @@
-.header {
+
+/* ======== Chung cho toàn app ======== */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f7fa;
+  color: #333;
+}
+
+/* Container chính */
+.container {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 0 15px;
+}
+
+/* Card chung */
+.card {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+/* Tiêu đề */
+h1, h2 {
+  color: #333;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+/* ======== Form & Input ======== */
+.form {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 25px;
-  background-color: #4f46e5;
-  color: white;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
 }
 
-.logout-btn {
-  background: #f87171;
-  border: none;
-  color: white;
-  padding: 8px 16px;
+.form input {
+  padding: 10px 12px;
   border-radius: 8px;
-  cursor: pointer;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  flex: 1 1 120px;
+  min-width: 120px;
 }
 
-.logout-btn:hover {
-  background: #dc2626;
+.form button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  background-color: #4caf50;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.form button:hover {
+  background-color: #45a049;
+}
+
+/* ======== Table ======== */
+.table-wrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.table th, .table td {
+  padding: 12px 10px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.table th {
+  background-color: #f0f0f0;
+}
+
+.table td.actions button {
+  margin-right: 5px;
+  padding: 6px 10px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.table td.actions .edit {
+  background-color: #2196F3;
+  color: #fff;
+}
+
+.table td.actions .edit:hover {
+  background-color: #1976D2;
+}
+
+.table td.actions .save {
+  background-color: #4caf50;
+  color: #fff;
+}
+
+.table td.actions .save:hover {
+  background-color: #45a049;
+}
+
+.table td.actions .danger {
+  background-color: #f44336;
+  color: #fff;
+}
+
+.table td.actions .danger:hover {
+  background-color: #d32f2f;
+}
+
+/* ======== Search ======== */
+.search-row {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.search-row .search {
+  width: 100%;
+  max-width: 300px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+
+/* ======== Login Card ======== */
+.login-card {
+  max-width: 400px;
+  margin: 50px auto;
+  padding: 30px 20px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.login-card h2 {
+  margin-bottom: 20px;
+  font-size: 24px;
+  color: #333;
+}
+
+.login-card input {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+
+.login-card button {
+  width: 100%;
+  padding: 10px 0;
+  border: none;
+  border-radius: 8px;
+  background-color: #4caf50;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.login-card button:hover {
+  background-color: #45a049;
+}
+
+.login-card .error {
+  color: red;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+/* ======== Responsive ======== */
+@media (max-width: 768px) {
+  .form input {
+    flex: 1 1 100%;
+  }
+
+  .table th, .table td {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  .login-card {
+    margin: 20px;
+    padding: 20px 15px;
+  }
+
+  .login-card h2 {
+    font-size: 20px;
+  }
+
+  .login-card input, .login-card button {
+    font-size: 14px;
+    padding: 8px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  h1, h2 {
+    font-size: 20px;
+  }
+
+  .form button {
+    font-size: 14px;
+  }
+
+  .table th, .table td {
+    font-size: 12px;
+    padding: 6px 5px;
+  }
 }

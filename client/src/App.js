@@ -1,8 +1,10 @@
 
+// src/App.js
+import './App.css';
 import React, { useState } from "react";
 import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./Login";
-import KetQuaHocTap from "./KetQuaHocTap";
+import Dashboard from "./Dashboard";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -10,11 +12,8 @@ function App() {
   return (
     <HashRouter>
       <Routes>
-        <Route path="/login" element={<Login setUser={setUser} />} />
-        <Route
-          path="/"
-          element={user ? <KetQuaHocTap /> : <Navigate to="/login" />}
-        />
+        <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Login setUser={setUser} />} />
+        <Route path="/dashboard/*" element={user ? <Dashboard user={user} setUser={setUser} /> : <Navigate to="/" />} />
       </Routes>
     </HashRouter>
   );
