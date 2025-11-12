@@ -1,8 +1,8 @@
-// 📁 server.js
 const express = require("express");
 const cors = require("cors");
 const fs = require("fs");
 const path = require("path");
+const { v4: uuidv4 } = require("uuid");
 
 const app = express();
 app.use(express.json());
@@ -18,8 +18,6 @@ app.use("/api/auth", authRoutes);
 // ===== SERVE REACT BUILD =====
 const clientPath = path.join(__dirname, "client", "build");
 app.use(express.static(clientPath));
-
-// Bất kỳ route nào không phải API => trả về React index.html
 app.get("*", (req, res) => {
   res.sendFile(path.join(clientPath, "index.html"));
 });

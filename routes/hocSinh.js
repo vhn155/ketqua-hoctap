@@ -1,59 +1,41 @@
-
-// 📁 routes/hocSinh.js
 const express = require("express");
 const fs = require("fs");
+const { v4: uuidv4 } = require("uuid");
 const router = express.Router();
 
-const DATA_FILE = "data.json";
+const DATA_FILE = "./data.json";
 
-// Helper đọc/ghi file
-const readData = () => {
-  if (!fs.existsSync(DATA_FILE)) fs.writeFileSync(DATA_FILE, "[]");
-  return JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
-};
+const readData = () => JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
+const writeData = (data) => fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
 
-const saveData = (data) => {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-};
-
-// ✅ Lấy danh sách học sinh (và tìm kiếm)
 router.get("/", (req, res) => {
+  const data = readData();
   const { search } = req.query;
-  let data = readData();
-  if (search) {
-    const keyword = search.toLowerCase();
-    data = data.filter(h => h.ten.toLowerCase().includes(keyword));
-  }
-  res.json(data);
+  const result = search ? data.filter(h => h.ten.toLowerCase().includes(search.toLowerCase())) : data;
+  res.json(result);
 });
 
-// ✅ Thêm học sinh mới
 router.post("/", (req, res) => {
   const data = readData();
-  const newHS = { id: Date.now(), ...req.body };
+  const newHS = { id: uuidv4(), ...req.body };
   data.push(newHS);
-  saveData(data);
+  writeData(data);
   res.json(newHS);
 });
 
-// ✅ Sửa học sinh
 router.put("/:id", (req, res) => {
   const data = readData();
-  const id = Number(req.params.id);
-  const index = data.findIndex(h => h.id === id);
-  if (index === -1) return res.status(404).json({ error: "Không tìm thấy học sinh" });
-
-  data[index] = { ...data[index], ...req.body };
-  saveData(data);
+  const index = data.findIndex(h => h.id === req.params.id);
+  if (index === -1) return res.status(404).json({ error: "Not found" });
+  data[index] = { id: req.params.id, ...req.body };
+  writeData(data);
   res.json(data[index]);
 });
 
-// ✅ Xóa học sinh
 router.delete("/:id", (req, res) => {
-  const data = readData();
-  const id = Number(req.params.id);
-  const newData = data.filter(h => h.id !== id);
-  saveData(newData);
+  let data = readData();
+  data = data.filter(h => h.id !== req.params.id);
+  writeData(data);
   res.json({ success: true });
 });
 
