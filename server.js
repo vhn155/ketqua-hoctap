@@ -15,13 +15,14 @@ app.use("/api/hocSinh", hocSinhRoutes);
 app.use("/api/auth", authRoutes);
 
 // ===== SERVE REACT BUILD =====
-const clientPath = path.join(__dirname, "client", "build");
-app.use(express.static(clientPath));
+const clientBuildPath = path.join(__dirname, "client", "build");
+app.use(express.static(clientBuildPath));
 
+// Bất kỳ route nào khác → trả về React index.html
 app.get("*", (req, res) => {
-  res.sendFile(path.join(clientPath, "index.html"));
+  res.sendFile(path.join(clientBuildPath, "index.html"));
 });
 
 // ===== START SERVER =====
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
