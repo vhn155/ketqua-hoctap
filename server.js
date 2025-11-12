@@ -1,11 +1,10 @@
-// 📁 server.js
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
 
 const app = express();
-app.use(cors());
 app.use(express.json());
+app.use(cors());
 
 // ===== ROUTES =====
 const hocSinhRoutes = require("./routes/hocSinh");
@@ -18,10 +17,11 @@ app.use("/api/auth", authRoutes);
 const clientPath = path.join(__dirname, "client", "build");
 app.use(express.static(clientPath));
 
+// Bất kỳ route frontend nào khác => trả về React index.html
 app.get("*", (req, res) => {
   res.sendFile(path.join(clientPath, "index.html"));
 });
 
 // ===== START SERVER =====
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
