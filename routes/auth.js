@@ -1,18 +1,18 @@
-// routes/auth.js
 const express = require("express");
-const router = express.Router();
 const fs = require("fs");
-const path = require("path");
+const router = express.Router();
 
-const usersPath = path.join(__dirname, "..", "users.json");
+const USERS_FILE = "users.json";
+const readUsers = () => JSON.parse(fs.readFileSync(USERS_FILE, "utf-8"));
 
-// POST /api/auth/login
+// POST login
 router.post("/login", (req, res) => {
   const { username, password } = req.body;
-  const users = JSON.parse(fs.readFileSync(usersPath, "utf-8"));
+  if (!username || !password) return res.status(400).json({ message: "Thiếu username hoặc password" });
+  const users = readUsers();
   const user = users.find(u => u.username === username && u.password === password);
-  if (!user) return res.status(401).json({ message: "Sai username hoặc mật khẩu" });
-  res.json({ message: "Đăng nhập thành công", username: user.username });
+  if (!user) return res.status(401).json({ message: "Sai tên đăng nhập hoặc mật khẩu" });
+  res.json({ username: user.username, name: user.name });
 });
 
 module.exports = router;

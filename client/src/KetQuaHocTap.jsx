@@ -1,34 +1,33 @@
 import React, { useState, useEffect } from "react";
+import "./KetQuaHocTap.css";
 
-
-const KetQuaHocTap = () => {
+const KetQuaHocTap = ({ user }) => {
   const [hocSinh, setHocSinh] = useState([]);
+  const [search, setSearch] = useState("");
   const [tenMoi, setTenMoi] = useState("");
   const [diemA, setDiemA] = useState("");
   const [diemB, setDiemB] = useState("");
   const [diemC, setDiemC] = useState("");
   const [editId, setEditId] = useState(null);
-  const [search, setSearch] = useState("");
 
-  const fetchData = (keyword = "") => {
-    const url = keyword ? `/api/hocSinh?search=${encodeURIComponent(keyword)}` : "/api/hocSinh";
-    fetch(url)
-      .then(res => res.json())
-      .then(data => setHocSinh(data));
+  const fetchData = async (keyword = "") => {
+    const res = await fetch(`/api/hocSinh${keyword ? `?search=${encodeURIComponent(keyword)}` : ""}`);
+    const data = await res.json();
+    setHocSinh(data);
   };
 
-  useEffect(() => fetchData(), []);
+  useEffect(() => { fetchData(); }, []);
   useEffect(() => {
-    const t = setTimeout(() => fetchData(search), 300);
+    const t = setTimeout(() => fetchData(search), 400);
     return () => clearTimeout(t);
   }, [search]);
 
-  const handleAdd = async () => {
-    if (!tenMoi) return;
+  const handleAdd = async (e) => {
+    e.preventDefault();
     const res = await fetch("/api/hocSinh", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ten: tenMoi, diemA, diemB, diemC })
+      body: JSON.stringify({ ten: tenMoi, diemA, diemB, diemC }),
     });
     const newHS = await res.json();
     setHocSinh(prev => [...prev, newHS]);
@@ -42,49 +41,54 @@ const KetQuaHocTap = () => {
 
   const handleEdit = (hs) => {
     setEditId(hs.id);
-    setTenMoi(hs.ten); setDiemA(hs.diemA); setDiemB(hs.diemB); setDiemC(hs.diemC);
+    setTenMoi(hs.ten);
+    setDiemA(hs.diemA);
+    setDiemB(hs.diemB);
+    setDiemC(hs.diemC);
   };
 
   const handleSave = async (id) => {
     const res = await fetch(`/api/hocSinh/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ten: tenMoi, diemA, diemB, diemC })
+      body: JSON.stringify({ ten: tenMoi, diemA, diemB, diemC }),
     });
     const updated = await res.json();
     setHocSinh(prev => prev.map(h => h.id === id ? updated : h));
-    setEditId(null); setTenMoi(""); setDiemA(""); setDiemB(""); setDiemC("");
+    setEditId(null);
+    setTenMoi(""); setDiemA(""); setDiemB(""); setDiemC("");
   };
 
   return (
-    <div className="card">
-      <h2>Kết quả học tập</h2>
-      <input placeholder="Tìm kiếm..." value={search} onChange={e => setSearch(e.target.value)} />
-      <div className="form">
+    <div className="container">
+      <h2>Xin chào, {user.name}</h2>
+      <input placeholder="🔍 Tìm kiếm học sinh..." value={search} onChange={e => setSearch(e.target.value)} />
+      <form onSubmit={handleAdd} className="form-add">
         <input placeholder="Tên học sinh" value={tenMoi} onChange={e => setTenMoi(e.target.value)} />
         <input placeholder="Điểm A" type="number" step="0.1" value={diemA} onChange={e => setDiemA(e.target.value)} />
         <input placeholder="Điểm B" type="number" step="0.1" value={diemB} onChange={e => setDiemB(e.target.value)} />
         <input placeholder="Điểm C" type="number" step="0.1" value={diemC} onChange={e => setDiemC(e.target.value)} />
-        {editId ? (
-          <button onClick={() => handleSave(editId)}>Lưu</button>
-        ) : (
-          <button onClick={handleAdd}>Thêm</button>
-        )}
-      </div>
+        <button type="submit">{editId ? "Lưu" : "Thêm"}</button>
+      </form>
       <table>
         <thead>
           <tr><th>Tên</th><th>A</th><th>B</th><th>C</th><th>Hành động</th></tr>
         </thead>
         <tbody>
-          {hocSinh.map(hs => (
-            <tr key={hs.id}>
-              <td>{hs.ten}</td>
-              <td>{hs.diemA}</td>
-              <td>{hs.diemB}</td>
-              <td>{hs.diemC}</td>
+          {hocSinh.map(h => (
+            <tr key={h.id}>
+              <td>{editId === h.id ? <input value={tenMoi} onChange={e => setTenMoi(e.target.value)} /> : h.ten}</td>
+              <td>{editId === h.id ? <input type="number" value={diemA} onChange={e => setDiemA(e.target.value)} /> : h.diemA}</td>
+              <td>{editId === h.id ? <input type="number" value={diemB} onChange={e => setDiemB(e.target.value)} /> : h.diemB}</td>
+              <td>{editId === h.id ? <input type="number" value={diemC} onChange={e => setDiemC(e.target.value)} /> : h.diemC}</td>
               <td>
-                <button onClick={() => handleEdit(hs)}>Sửa</button>
-                <button onClick={() => handleDelete(hs.id)}>Xóa</button>
+                {editId === h.id ? 
+                  <button onClick={() => handleSave(h.id)}>Lưu</button> :
+                  <>
+                    <button onClick={() => handleEdit(h)}>Sửa</button>
+                    <button onClick={() => handleDelete(h.id)}>Xóa</button>
+                  </>
+                }
               </td>
             </tr>
           ))}
