@@ -1,51 +1,53 @@
-
 const express = require("express");
 const fs = require("fs");
+const path = require("path");
 const { v4: uuidv4 } = require("uuid");
+
 const router = express.Router();
+const dataPath = path.join(__dirname, "..", "data.json");
 
-const DATA_FILE = "data.json";
-const readData = () => JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
-const writeData = (data) => fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-
-// GET all or search
+// Lấy danh sách học sinh (có thể tìm kiếm theo tên)
 router.get("/", (req, res) => {
-  let data = readData();
   const { search } = req.query;
-  if (search) data = data.filter(h => h.ten.toLowerCase().includes(search.toLowerCase()));
-  res.json(data);
+  let hocSinh = JSON.parse(fs.readFileSync(dataPath));
+  if (search) {
+    hocSinh = hocSinh.filter(h => h.ten.toLowerCase().includes(search.toLowerCase()));
+  }
+  res.json(hocSinh);
 });
 
-// POST add
+// Thêm học sinh
 router.post("/", (req, res) => {
+  const hocSinh = JSON.parse(fs.readFileSync(dataPath));
   const { ten, diemA, diemB, diemC } = req.body;
-  if (!ten || diemA == null || diemB == null || diemC == null) return res.status(400).json({ message: "Thiếu dữ liệu" });
-  const data = readData();
   const newHS = { id: uuidv4(), ten, diemA, diemB, diemC };
-  data.push(newHS);
-  writeData(data);
+  hocSinh.push(newHS);
+  fs.writeFileSync(dataPath, JSON.stringify(hocSinh, null, 2));
   res.json(newHS);
 });
 
-// PUT update
+// Sửa học sinh
 router.put("/:id", (req, res) => {
+  const hocSinh = JSON.parse(fs.readFileSync(dataPath));
   const { id } = req.params;
   const { ten, diemA, diemB, diemC } = req.body;
-  const data = readData();
-  const idx = data.findIndex(h => h.id === id);
-  if (idx === -1) return res.status(404).json({ message: "Không tìm thấy học sinh" });
-  data[idx] = { id, ten, diemA, diemB, diemC };
-  writeData(data);
-  res.json(data[idx]);
+  const index = hocSinh.findIndex(h => h.id === id);
+  if (index !== -1) {
+    hocSinh[index] = { id, ten, diemA, diemB, diemC };
+    fs.writeFileSync(dataPath, JSON.stringify(hocSinh, null, 2));
+    return res.json(hocSinh[index]);
+  } else {
+    return res.status(404).json({ message: "Học sinh không tồn tại" });
+  }
 });
 
-// DELETE
+// Xóa học sinh
 router.delete("/:id", (req, res) => {
+  let hocSinh = JSON.parse(fs.readFileSync(dataPath));
   const { id } = req.params;
-  let data = readData();
-  data = data.filter(h => h.id !== id);
-  writeData(data);
-  res.json({ message: "Đã xóa" });
+  hocSinh = hocSinh.filter(h => h.id !== id);
+  fs.writeFileSync(dataPath, JSON.stringify(hocSinh, null, 2));
+  res.json({ success: true });
 });
 
 module.exports = router;

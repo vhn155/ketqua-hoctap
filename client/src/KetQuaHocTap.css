@@ -1,10 +1,91 @@
-.container { max-width: 800px; margin: 20px auto; padding: 10px; }
-.form-add input { padding: 8px; margin: 5px; border-radius: 5px; border: 1px solid #ccc; }
-.form-add button { padding: 8px 15px; margin: 5px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; }
-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-table th, table td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-table th { background: #007bff; color: white; }
+/* Container tổng */
+.container {
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 10px;
+}
+
+/* Card */
+.card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* Title */
+.title {
+  text-align: center;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+/* Form nhập liệu */
+.form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.form input {
+  flex: 1 1 120px;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.btn {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn.primary { background-color: #4CAF50; color: white; }
+.btn.edit { background-color: #2196F3; color: white; margin-right: 5px; }
+.btn.save { background-color: #FF9800; color: white; margin-right: 5px; }
+.btn.danger { background-color: #f44336; color: white; }
+
+/* Table responsive */
+.table-wrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th, .table td {
+  text-align: left;
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+.actions button {
+  margin: 2px 0;
+}
+
+/* Search box */
+.search-row {
+  margin-bottom: 10px;
+}
+
+.search {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+/* Responsive */
 @media (max-width: 600px) {
-  .container, table { font-size: 14px; }
-  .form-add input, .form-add button { width: 100%; margin: 5px 0; }
+  .form {
+    flex-direction: column;
+  }
+  .table th, .table td {
+    font-size: 14px;
+    padding: 6px;
+  }
 }

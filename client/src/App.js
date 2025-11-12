@@ -1,18 +1,16 @@
 import React, { useState } from "react";
-import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "./Login";
-import KetQuaHocTap from "./KetQuaHocTap";
+import Dashboard from "./Dashboard";
 
 function App() {
   const [user, setUser] = useState(null);
 
   return (
-    <HashRouter>
-      <Routes>
-        <Route path="/" element={user ? <KetQuaHocTap user={user} /> : <Navigate to="/login" />} />
-        <Route path="/login" element={<Login setUser={setUser} />} />
-      </Routes>
-    </HashRouter>
+    <Routes>
+      <Route path="/" element={!user ? <Login setUser={setUser} /> : <Navigate to="/dashboard" />} />
+      <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/" />} />
+    </Routes>
   );
 }
 

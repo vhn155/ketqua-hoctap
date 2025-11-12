@@ -1,18 +1,20 @@
 const express = require("express");
 const fs = require("fs");
+const path = require("path");
 const router = express.Router();
 
-const USERS_FILE = "users.json";
-const readUsers = () => JSON.parse(fs.readFileSync(USERS_FILE, "utf-8"));
+const usersPath = path.join(__dirname, "..", "users.json");
 
-// POST login
+// Đăng nhập
 router.post("/login", (req, res) => {
   const { username, password } = req.body;
-  if (!username || !password) return res.status(400).json({ message: "Thiếu username hoặc password" });
-  const users = readUsers();
+  const users = JSON.parse(fs.readFileSync(usersPath));
   const user = users.find(u => u.username === username && u.password === password);
-  if (!user) return res.status(401).json({ message: "Sai tên đăng nhập hoặc mật khẩu" });
-  res.json({ username: user.username, name: user.name });
+  if (user) {
+    return res.json({ success: true, username: user.username });
+  } else {
+    return res.status(401).json({ success: false, message: "Sai username hoặc password" });
+  }
 });
 
 module.exports = router;

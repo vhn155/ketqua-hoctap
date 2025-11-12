@@ -1,19 +1,28 @@
 import React, { useState, useEffect } from "react";
 import "./KetQuaHocTap.css";
 
-const KetQuaHocTap = ({ user }) => {
+const KetQuaHocTap = () => {
   const [hocSinh, setHocSinh] = useState([]);
-  const [search, setSearch] = useState("");
   const [tenMoi, setTenMoi] = useState("");
   const [diemA, setDiemA] = useState("");
   const [diemB, setDiemB] = useState("");
   const [diemC, setDiemC] = useState("");
-  const [editId, setEditId] = useState(null);
 
-  const fetchData = async (keyword = "") => {
-    const res = await fetch(`/api/hocSinh${keyword ? `?search=${encodeURIComponent(keyword)}` : ""}`);
-    const data = await res.json();
-    setHocSinh(data);
+  const [editId, setEditId] = useState(null);
+  const [editTen, setEditTen] = useState("");
+  const [editDiemA, setEditDiemA] = useState("");
+  const [editDiemB, setEditDiemB] = useState("");
+  const [editDiemC, setEditDiemC] = useState("");
+
+  const [search, setSearch] = useState("");
+
+  // Lấy danh sách học sinh
+  const fetchData = (keyword = "") => {
+    const url = keyword ? `/api/hocSinh?search=${encodeURIComponent(keyword)}` : "/api/hocSinh";
+    fetch(url)
+      .then(res => res.json())
+      .then(data => setHocSinh(data))
+      .catch(err => console.error(err));
   };
 
   useEffect(() => { fetchData(); }, []);
@@ -22,78 +31,101 @@ const KetQuaHocTap = ({ user }) => {
     return () => clearTimeout(t);
   }, [search]);
 
-  const handleAdd = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    const res = await fetch("/api/hocSinh", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ten: tenMoi, diemA, diemB, diemC }),
+    if (!tenMoi || diemA === "" || diemB === "" || diemC === "") return;
+    fetch('/api/hocSinh', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ten: tenMoi, diemA, diemB, diemC })
+    }).then(res => res.json()).then(newHS => {
+      setHocSinh(prev => [...prev, newHS]);
+      setTenMoi(''); setDiemA(''); setDiemB(''); setDiemC('');
     });
-    const newHS = await res.json();
-    setHocSinh(prev => [...prev, newHS]);
-    setTenMoi(""); setDiemA(""); setDiemB(""); setDiemC("");
   };
 
-  const handleDelete = async (id) => {
-    await fetch(`/api/hocSinh/${id}`, { method: "DELETE" });
-    setHocSinh(prev => prev.filter(h => h.id !== id));
+  const handleDelete = (id) => {
+    fetch(`/api/hocSinh/${id}`, { method: 'DELETE' })
+      .then(() => setHocSinh(prev => prev.filter(h => h.id !== id)));
   };
 
   const handleEdit = (hs) => {
     setEditId(hs.id);
-    setTenMoi(hs.ten);
-    setDiemA(hs.diemA);
-    setDiemB(hs.diemB);
-    setDiemC(hs.diemC);
+    setEditTen(hs.ten);
+    setEditDiemA(hs.diemA);
+    setEditDiemB(hs.diemB);
+    setEditDiemC(hs.diemC);
   };
 
-  const handleSave = async (id) => {
-    const res = await fetch(`/api/hocSinh/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ten: tenMoi, diemA, diemB, diemC }),
+  const handleSave = (id) => {
+    fetch(`/api/hocSinh/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ten: editTen, diemA: editDiemA, diemB: editDiemB, diemC: editDiemC })
+    }).then(res => res.json()).then(updated => {
+      setHocSinh(prev => prev.map(h => h.id === id ? updated : h));
+      setEditId(null);
     });
-    const updated = await res.json();
-    setHocSinh(prev => prev.map(h => h.id === id ? updated : h));
-    setEditId(null);
-    setTenMoi(""); setDiemA(""); setDiemB(""); setDiemC("");
   };
 
   return (
     <div className="container">
-      <h2>Xin chào, {user.name}</h2>
-      <input placeholder="🔍 Tìm kiếm học sinh..." value={search} onChange={e => setSearch(e.target.value)} />
-      <form onSubmit={handleAdd} className="form-add">
-        <input placeholder="Tên học sinh" value={tenMoi} onChange={e => setTenMoi(e.target.value)} />
-        <input placeholder="Điểm A" type="number" step="0.1" value={diemA} onChange={e => setDiemA(e.target.value)} />
-        <input placeholder="Điểm B" type="number" step="0.1" value={diemB} onChange={e => setDiemB(e.target.value)} />
-        <input placeholder="Điểm C" type="number" step="0.1" value={diemC} onChange={e => setDiemC(e.target.value)} />
-        <button type="submit">{editId ? "Lưu" : "Thêm"}</button>
-      </form>
-      <table>
-        <thead>
-          <tr><th>Tên</th><th>A</th><th>B</th><th>C</th><th>Hành động</th></tr>
-        </thead>
-        <tbody>
-          {hocSinh.map(h => (
-            <tr key={h.id}>
-              <td>{editId === h.id ? <input value={tenMoi} onChange={e => setTenMoi(e.target.value)} /> : h.ten}</td>
-              <td>{editId === h.id ? <input type="number" value={diemA} onChange={e => setDiemA(e.target.value)} /> : h.diemA}</td>
-              <td>{editId === h.id ? <input type="number" value={diemB} onChange={e => setDiemB(e.target.value)} /> : h.diemB}</td>
-              <td>{editId === h.id ? <input type="number" value={diemC} onChange={e => setDiemC(e.target.value)} /> : h.diemC}</td>
-              <td>
-                {editId === h.id ? 
-                  <button onClick={() => handleSave(h.id)}>Lưu</button> :
-                  <>
-                    <button onClick={() => handleEdit(h)}>Sửa</button>
-                    <button onClick={() => handleDelete(h.id)}>Xóa</button>
-                  </>
-                }
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="card">
+        <h2 className="title">Kết quả học tập</h2>
+
+        <div className="search-row">
+          <input
+            className="search"
+            placeholder="🔍 Tìm kiếm theo tên..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </div>
+
+        <form className="form" onSubmit={handleSubmit}>
+          <input value={tenMoi} onChange={e => setTenMoi(e.target.value)} placeholder="Tên học sinh" />
+          <input type="number" step="0.1" value={diemA} onChange={e => setDiemA(e.target.value)} placeholder="Điểm A" />
+          <input type="number" step="0.1" value={diemB} onChange={e => setDiemB(e.target.value)} placeholder="Điểm B" />
+          <input type="number" step="0.1" value={diemC} onChange={e => setDiemC(e.target.value)} placeholder="Điểm C" />
+          <button className="btn primary" type="submit">Thêm</button>
+        </form>
+
+        <div className="table-wrap">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Học sinh</th>
+                <th>A</th>
+                <th>B</th>
+                <th>C</th>
+                <th>Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              {hocSinh.length ? hocSinh.map(hs => (
+                <tr key={hs.id}>
+                  <td>{editId === hs.id ? <input value={editTen} onChange={e => setEditTen(e.target.value)} /> : hs.ten}</td>
+                  <td>{editId === hs.id ? <input type="number" value={editDiemA} onChange={e => setEditDiemA(e.target.value)} /> : hs.diemA}</td>
+                  <td>{editId === hs.id ? <input type="number" value={editDiemB} onChange={e => setEditDiemB(e.target.value)} /> : hs.diemB}</td>
+                  <td>{editId === hs.id ? <input type="number" value={editDiemC} onChange={e => setEditDiemC(e.target.value)} /> : hs.diemC}</td>
+                  <td className="actions">
+                    {editId === hs.id ? (
+                      <button className="btn save" onClick={() => handleSave(hs.id)}>Lưu</button>
+                    ) : (
+                      <>
+                        <button className="btn edit" onClick={() => handleEdit(hs)}>Sửa</button>
+                        <button className="btn danger" onClick={() => handleDelete(hs.id)}>Xóa</button>
+                      </>
+                    )}
+                  </td>
+                </tr>
+              )) : (
+                <tr><td colSpan={5}>Không có dữ liệu</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 };
