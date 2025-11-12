@@ -1,16 +1,32 @@
 import React, { useState } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./Login";
-import Dashboard from "./Dashboard";
+import KetQuaHocTap from "./KetQuaHocTap";
 
 function App() {
-  const [user, setUser] = useState(null);
+  const [loggedIn, setLoggedIn] = useState(!!localStorage.getItem("token"));
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setLoggedIn(false);
+  };
 
   return (
-    <Routes>
-      <Route path="/" element={!user ? <Login setUser={setUser} /> : <Navigate to="/dashboard" />} />
-      <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/" />} />
-    </Routes>
+    <Router>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            loggedIn ? (
+              <KetQuaHocTap onLogout={handleLogout} />
+            ) : (
+              <Login onLogin={() => setLoggedIn(true)} />
+            )
+          }
+        />
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </Router>
   );
 }
 

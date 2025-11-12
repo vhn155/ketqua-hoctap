@@ -1,130 +1,50 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import "./KetQuaHocTap.css";
 
-const KetQuaHocTap = () => {
+const KetQuaHocTap = ({ onLogout }) => {
   const [hocSinh, setHocSinh] = useState([]);
-  const [tenMoi, setTenMoi] = useState("");
-  const [diemA, setDiemA] = useState("");
-  const [diemB, setDiemB] = useState("");
-  const [diemC, setDiemC] = useState("");
-
-  const [editId, setEditId] = useState(null);
-  const [editTen, setEditTen] = useState("");
-  const [editDiemA, setEditDiemA] = useState("");
-  const [editDiemB, setEditDiemB] = useState("");
-  const [editDiemC, setEditDiemC] = useState("");
-
   const [search, setSearch] = useState("");
 
-  // Lấy danh sách học sinh
-  const fetchData = (keyword = "") => {
-    const url = keyword ? `/api/hocSinh?search=${encodeURIComponent(keyword)}` : "/api/hocSinh";
-    fetch(url)
-      .then(res => res.json())
-      .then(data => setHocSinh(data))
-      .catch(err => console.error(err));
+  const loadData = async () => {
+    const res = await fetch("/api/hocSinh");
+    const data = await res.json();
+    setHocSinh(data);
   };
 
-  useEffect(() => { fetchData(); }, []);
   useEffect(() => {
-    const t = setTimeout(() => fetchData(search), 400);
-    return () => clearTimeout(t);
-  }, [search]);
+    loadData();
+  }, []);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!tenMoi || diemA === "" || diemB === "" || diemC === "") return;
-    fetch('/api/hocSinh', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ten: tenMoi, diemA, diemB, diemC })
-    }).then(res => res.json()).then(newHS => {
-      setHocSinh(prev => [...prev, newHS]);
-      setTenMoi(''); setDiemA(''); setDiemB(''); setDiemC('');
-    });
-  };
-
-  const handleDelete = (id) => {
-    fetch(`/api/hocSinh/${id}`, { method: 'DELETE' })
-      .then(() => setHocSinh(prev => prev.filter(h => h.id !== id)));
-  };
-
-  const handleEdit = (hs) => {
-    setEditId(hs.id);
-    setEditTen(hs.ten);
-    setEditDiemA(hs.diemA);
-    setEditDiemB(hs.diemB);
-    setEditDiemC(hs.diemC);
-  };
-
-  const handleSave = (id) => {
-    fetch(`/api/hocSinh/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ten: editTen, diemA: editDiemA, diemB: editDiemB, diemC: editDiemC })
-    }).then(res => res.json()).then(updated => {
-      setHocSinh(prev => prev.map(h => h.id === id ? updated : h));
-      setEditId(null);
-    });
-  };
+  const filtered = hocSinh.filter(
+    (hs) =>
+      hs.ten.toLowerCase().includes(search.toLowerCase()) ||
+      hs.lop.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
-    <div className="container">
-      <div className="card">
-        <h2 className="title">Kết quả học tập</h2>
+    <div className="kq-container">
+      <div className="kq-header">
+        <h2>Kết quả học tập</h2>
+        <button className="btn-logout" onClick={onLogout}>
+          Đăng xuất
+        </button>
+      </div>
+      <input
+        className="kq-search"
+        type="text"
+        placeholder="Tra cứu theo tên hoặc lớp..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
 
-        <div className="search-row">
-          <input
-            className="search"
-            placeholder="🔍 Tìm kiếm theo tên..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-        </div>
-
-        <form className="form" onSubmit={handleSubmit}>
-          <input value={tenMoi} onChange={e => setTenMoi(e.target.value)} placeholder="Tên học sinh" />
-          <input type="number" step="0.1" value={diemA} onChange={e => setDiemA(e.target.value)} placeholder="Điểm A" />
-          <input type="number" step="0.1" value={diemB} onChange={e => setDiemB(e.target.value)} placeholder="Điểm B" />
-          <input type="number" step="0.1" value={diemC} onChange={e => setDiemC(e.target.value)} placeholder="Điểm C" />
-          <button className="btn primary" type="submit">Thêm</button>
-        </form>
-
-        <div className="table-wrap">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Học sinh</th>
-                <th>A</th>
-                <th>B</th>
-                <th>C</th>
-                <th>Hành động</th>
-              </tr>
-            </thead>
-            <tbody>
-              {hocSinh.length ? hocSinh.map(hs => (
-                <tr key={hs.id}>
-                  <td>{editId === hs.id ? <input value={editTen} onChange={e => setEditTen(e.target.value)} /> : hs.ten}</td>
-                  <td>{editId === hs.id ? <input type="number" value={editDiemA} onChange={e => setEditDiemA(e.target.value)} /> : hs.diemA}</td>
-                  <td>{editId === hs.id ? <input type="number" value={editDiemB} onChange={e => setEditDiemB(e.target.value)} /> : hs.diemB}</td>
-                  <td>{editId === hs.id ? <input type="number" value={editDiemC} onChange={e => setEditDiemC(e.target.value)} /> : hs.diemC}</td>
-                  <td className="actions">
-                    {editId === hs.id ? (
-                      <button className="btn save" onClick={() => handleSave(hs.id)}>Lưu</button>
-                    ) : (
-                      <>
-                        <button className="btn edit" onClick={() => handleEdit(hs)}>Sửa</button>
-                        <button className="btn danger" onClick={() => handleDelete(hs.id)}>Xóa</button>
-                      </>
-                    )}
-                  </td>
-                </tr>
-              )) : (
-                <tr><td colSpan={5}>Không có dữ liệu</td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+      <div className="kq-list">
+        {filtered.map((hs) => (
+          <div key={hs.id} className="kq-card">
+            <h4>{hs.ten}</h4>
+            <p>Lớp: {hs.lop}</p>
+            <p>Điểm TB: {hs.diemTB}</p>
+          </div>
+        ))}
       </div>
     </div>
   );
