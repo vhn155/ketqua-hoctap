@@ -1,55 +1,46 @@
-// routes/hocSinh.js
 const express = require("express");
-const router = express.Router();
-const fs = require("fs");
-const path = require("path");
 const { v4: uuidv4 } = require("uuid");
+const fs = require("fs");
+const router = express.Router();
 
-const dataPath = path.join(__dirname, "..", "data.json");
+const DATA_FILE = "./data.json";
 
-// helper read/write
-const readData = () => JSON.parse(fs.readFileSync(dataPath, "utf-8"));
-const writeData = (data) => fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
-
-// GET all students (with optional search)
+// Lấy tất cả hoặc search
 router.get("/", (req, res) => {
+  const data = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8") || "[]");
   const { search } = req.query;
-  let hocSinh = readData();
   if (search) {
-    hocSinh = hocSinh.filter(h => h.ten.toLowerCase().includes(search.toLowerCase()));
+    const filtered = data.filter(h => h.ten.toLowerCase().includes(search.toLowerCase()));
+    return res.json(filtered);
   }
-  res.json(hocSinh);
+  res.json(data);
 });
 
-// POST new student
+// Thêm học sinh
 router.post("/", (req, res) => {
-  const { ten, diemA, diemB, diemC } = req.body;
-  const hocSinh = readData();
-  const newHS = { id: uuidv4(), ten, diemA, diemB, diemC };
-  hocSinh.push(newHS);
-  writeData(hocSinh);
+  const data = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8") || "[]");
+  const newHS = { id: uuidv4(), ...req.body };
+  data.push(newHS);
+  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
   res.json(newHS);
 });
 
-// PUT update student
+// Sửa học sinh
 router.put("/:id", (req, res) => {
-  const { id } = req.params;
-  const { ten, diemA, diemB, diemC } = req.body;
-  const hocSinh = readData();
-  const index = hocSinh.findIndex(h => h.id === id);
-  if (index === -1) return res.status(404).json({ message: "Không tìm thấy học sinh" });
-  hocSinh[index] = { id, ten, diemA, diemB, diemC };
-  writeData(hocSinh);
-  res.json(hocSinh[index]);
+  const data = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8") || "[]");
+  const index = data.findIndex(h => h.id === req.params.id);
+  if (index === -1) return res.status(404).json({ message: "Not found" });
+  data[index] = { ...data[index], ...req.body };
+  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+  res.json(data[index]);
 });
 
-// DELETE student
+// Xóa học sinh
 router.delete("/:id", (req, res) => {
-  const { id } = req.params;
-  let hocSinh = readData();
-  hocSinh = hocSinh.filter(h => h.id !== id);
-  writeData(hocSinh);
-  res.json({ message: "Xóa thành công" });
+  let data = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8") || "[]");
+  data = data.filter(h => h.id !== req.params.id);
+  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+  res.json({ message: "Deleted" });
 });
 
 module.exports = router;
