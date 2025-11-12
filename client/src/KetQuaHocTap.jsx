@@ -4,6 +4,7 @@ import "./KetQuaHocTap.css";
 
 const KetQuaHocTap = () => {
   const [hocSinh, setHocSinh] = useState([]);
+  const [hocSinhGoc, setHocSinhGoc] = useState([]); // dữ liệu gốc để filter
   const [tenMoi, setTenMoi] = useState("");
   const [diemA, setDiemA] = useState("");
   const [diemB, setDiemB] = useState("");
@@ -16,21 +17,31 @@ const KetQuaHocTap = () => {
   const [editDiemC, setEditDiemC] = useState("");
 
   const [search, setSearch] = useState("");
+  const [filterName, setFilterName] = useState(""); // thêm bộ lọc tên tại cột
 
-  // Lấy danh sách học sinh
-  const fetchData = (keyword = "") => {
-    const url = keyword ? `/api/hocSinh?search=${encodeURIComponent(keyword)}` : "/api/hocSinh";
-    fetch(url)
+  const fetchData = () => {
+    fetch("/api/hocSinh")
       .then(res => res.json())
-      .then(data => setHocSinh(data))
+      .then(data => {
+        setHocSinh(data);
+        setHocSinhGoc(data);
+      })
       .catch(err => console.error(err));
   };
 
   useEffect(() => { fetchData(); }, []);
+
+  // 🔍 Lọc theo từ khóa tại ô filter
   useEffect(() => {
-    const t = setTimeout(() => fetchData(search), 400);
-    return () => clearTimeout(t);
-  }, [search]);
+    if (!filterName.trim()) {
+      setHocSinh(hocSinhGoc);
+    } else {
+      const filtered = hocSinhGoc.filter(hs =>
+        hs.ten.toLowerCase().includes(filterName.toLowerCase())
+      );
+      setHocSinh(filtered);
+    }
+  }, [filterName, hocSinhGoc]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -41,13 +52,17 @@ const KetQuaHocTap = () => {
       body: JSON.stringify({ ten: tenMoi, diemA, diemB, diemC })
     }).then(res => res.json()).then(newHS => {
       setHocSinh(prev => [...prev, newHS]);
+      setHocSinhGoc(prev => [...prev, newHS]);
       setTenMoi(''); setDiemA(''); setDiemB(''); setDiemC('');
     });
   };
 
   const handleDelete = (id) => {
     fetch(`/api/hocSinh/${id}`, { method: 'DELETE' })
-      .then(() => setHocSinh(prev => prev.filter(h => h.id !== id)));
+      .then(() => {
+        setHocSinh(prev => prev.filter(h => h.id !== id));
+        setHocSinhGoc(prev => prev.filter(h => h.id !== id));
+      });
   };
 
   const handleEdit = (hs) => {
@@ -65,6 +80,7 @@ const KetQuaHocTap = () => {
       body: JSON.stringify({ ten: editTen, diemA: editDiemA, diemB: editDiemB, diemC: editDiemC })
     }).then(res => res.json()).then(updated => {
       setHocSinh(prev => prev.map(h => h.id === id ? updated : h));
+      setHocSinhGoc(prev => prev.map(h => h.id === id ? updated : h));
       setEditId(null);
     });
   };
@@ -73,15 +89,6 @@ const KetQuaHocTap = () => {
     <div className="container">
       <div className="card">
         <h2 className="title">Kết quả học tập</h2>
-
-        <div className="search-row">
-          <input
-            className="search"
-            placeholder="🔍 Tìm kiếm theo tên..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-        </div>
 
         <form className="form" onSubmit={handleSubmit}>
           <input value={tenMoi} onChange={e => setTenMoi(e.target.value)} placeholder="Tên học sinh" />
@@ -95,7 +102,18 @@ const KetQuaHocTap = () => {
           <table className="table">
             <thead>
               <tr>
-                <th>Học sinh</th>
+                <th>
+                  Học sinh
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="Lọc tên..."
+                      value={filterName}
+                      onChange={e => setFilterName(e.target.value)}
+                      className="filter-input"
+                    />
+                  </div>
+                </th>
                 <th>A</th>
                 <th>B</th>
                 <th>C</th>
