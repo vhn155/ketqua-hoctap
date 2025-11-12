@@ -1,38 +1,45 @@
-
 // 📁 routes/hocSinh.js
 const express = require("express");
+const fs = require("fs");
+const path = require("path");
+
 const router = express.Router();
+const DATA_PATH = path.join(__dirname, "../data/hocSinh.json");
 
-let danhSachHocSinh = [
-  { id: 1, ten: "Nguyễn Văn A", lop: "12A1", diemTB: 8.5 },
-  { id: 2, ten: "Trần Thị B", lop: "12A2", diemTB: 7.9 },
-];
+const readData = () => JSON.parse(fs.readFileSync(DATA_PATH, "utf8"));
+const writeData = (data) =>
+  fs.writeFileSync(DATA_PATH, JSON.stringify(data, null, 2));
 
-// Lấy toàn bộ danh sách
+// Lấy toàn bộ danh sách học sinh
 router.get("/", (req, res) => {
-  res.json(danhSachHocSinh);
+  res.json(readData());
 });
 
 // Thêm học sinh
 router.post("/", (req, res) => {
+  const data = readData();
   const newHS = { id: Date.now(), ...req.body };
-  danhSachHocSinh.push(newHS);
+  data.push(newHS);
+  writeData(data);
   res.json(newHS);
 });
 
-// Cập nhật
+// Cập nhật học sinh
 router.put("/:id", (req, res) => {
-  const { id } = req.params;
-  const index = danhSachHocSinh.findIndex((hs) => hs.id == id);
-  if (index === -1) return res.status(404).json({ message: "Không tìm thấy" });
-  danhSachHocSinh[index] = { ...danhSachHocSinh[index], ...req.body };
-  res.json(danhSachHocSinh[index]);
+  const data = readData();
+  const idx = data.findIndex((hs) => hs.id === parseInt(req.params.id));
+  if (idx === -1) return res.status(404).json({ error: "Không tìm thấy học sinh" });
+  data[idx] = { ...data[idx], ...req.body };
+  writeData(data);
+  res.json(data[idx]);
 });
 
-// Xóa
+// Xóa học sinh
 router.delete("/:id", (req, res) => {
-  danhSachHocSinh = danhSachHocSinh.filter((hs) => hs.id != req.params.id);
-  res.json({ message: "Đã xóa thành công" });
+  let data = readData();
+  data = data.filter((hs) => hs.id !== parseInt(req.params.id));
+  writeData(data);
+  res.json({ message: "Đã xóa" });
 });
 
 module.exports = router;

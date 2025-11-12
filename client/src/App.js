@@ -4,12 +4,7 @@ import Login from "./Login";
 import KetQuaHocTap from "./KetQuaHocTap";
 
 function App() {
-  const [loggedIn, setLoggedIn] = useState(!!localStorage.getItem("token"));
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    setLoggedIn(false);
-  };
+  const [loggedIn, setLoggedIn] = useState(false);
 
   return (
     <Router>
@@ -18,7 +13,7 @@ function App() {
           path="/"
           element={
             loggedIn ? (
-              <KetQuaHocTap onLogout={handleLogout} />
+              <KetQuaHocTap onLogout={() => setLoggedIn(false)} />
             ) : (
               <Login onLogin={() => setLoggedIn(true)} />
             )

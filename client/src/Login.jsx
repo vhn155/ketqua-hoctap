@@ -1,56 +1,50 @@
 
 import React, { useState } from "react";
-import "./Login.css";
+import "./KetQuaHocTap.css";
 
 const Login = ({ onLogin }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (!username || !password) return setError("Vui lòng nhập đầy đủ thông tin");
-
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
-      const data = await res.json();
+
       if (res.ok) {
-        localStorage.setItem("token", data.token);
-        onLogin(); // gọi callback để đổi state đã login
+        onLogin();
       } else {
-        setError(data.message || "Sai thông tin đăng nhập");
+        setError("Sai tài khoản hoặc mật khẩu");
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
       setError("Lỗi kết nối server");
     }
   };
 
   return (
     <div className="login-container">
-      <div className="login-card">
-        <h2 className="login-title">Đăng nhập</h2>
-        {error && <div className="login-error">{error}</div>}
-        <form className="login-form" onSubmit={handleSubmit}>
-          <input
-            type="text"
-            placeholder="Tên đăng nhập"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Mật khẩu"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button type="submit" className="btn-login">Đăng nhập</button>
-        </form>
-      </div>
+      <h2>Đăng nhập hệ thống</h2>
+      <form onSubmit={handleLogin} className="login-form">
+        <input
+          type="text"
+          placeholder="Tài khoản"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+        <input
+          type="password"
+          placeholder="Mật khẩu"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button type="submit">Đăng nhập</button>
+        {error && <p className="error">{error}</p>}
+      </form>
     </div>
   );
 };
