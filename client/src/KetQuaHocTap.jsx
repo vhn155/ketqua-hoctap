@@ -3,87 +3,88 @@ import "./KetQuaHocTap.css";
 
 const KetQuaHocTap = () => {
   const [hocSinh, setHocSinh] = useState([]);
-  const [ten, setTen] = useState("");
+  const [tenMoi, setTenMoi] = useState("");
   const [diemA, setDiemA] = useState("");
   const [diemB, setDiemB] = useState("");
   const [diemC, setDiemC] = useState("");
-  const [search, setSearch] = useState("");
   const [editId, setEditId] = useState(null);
+  const [search, setSearch] = useState("");
 
   const fetchData = (keyword = "") => {
-    const url = keyword ? `/api/hocSinh?search=${keyword}` : "/api/hocSinh";
+    const url = keyword ? `/api/hocSinh?search=${encodeURIComponent(keyword)}` : "/api/hocSinh";
     fetch(url)
       .then(res => res.json())
-      .then(setHocSinh);
+      .then(data => setHocSinh(data));
   };
 
   useEffect(() => fetchData(), []);
-  useEffect(() => { const t = setTimeout(() => fetchData(search), 300); return () => clearTimeout(t); }, [search]);
+  useEffect(() => {
+    const t = setTimeout(() => fetchData(search), 300);
+    return () => clearTimeout(t);
+  }, [search]);
 
-  const handleAdd = (e) => {
-    e.preventDefault();
-    if (!ten) return;
-    fetch("/api/hocSinh", {
+  const handleAdd = async () => {
+    if (!tenMoi) return;
+    const res = await fetch("/api/hocSinh", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ten, diemA, diemB, diemC })
-    }).then(res => res.json()).then(newHS => {
-      setHocSinh(prev => [...prev, newHS]);
-      setTen(""); setDiemA(""); setDiemB(""); setDiemC("");
+      body: JSON.stringify({ ten: tenMoi, diemA, diemB, diemC })
     });
+    const newHS = await res.json();
+    setHocSinh(prev => [...prev, newHS]);
+    setTenMoi(""); setDiemA(""); setDiemB(""); setDiemC("");
   };
 
-  const handleDelete = (id) => {
-    fetch(`/api/hocSinh/${id}`, { method: "DELETE" })
-      .then(() => setHocSinh(prev => prev.filter(h => h.id !== id)));
+  const handleDelete = async (id) => {
+    await fetch(`/api/hocSinh/${id}`, { method: "DELETE" });
+    setHocSinh(prev => prev.filter(h => h.id !== id));
   };
 
   const handleEdit = (hs) => {
     setEditId(hs.id);
-    setTen(hs.ten); setDiemA(hs.diemA); setDiemB(hs.diemB); setDiemC(hs.diemC);
+    setTenMoi(hs.ten); setDiemA(hs.diemA); setDiemB(hs.diemB); setDiemC(hs.diemC);
   };
 
-  const handleSave = (id) => {
-    fetch(`/api/hocSinh/${id}`, {
+  const handleSave = async (id) => {
+    const res = await fetch(`/api/hocSinh/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ten, diemA, diemB, diemC })
-    }).then(res => res.json()).then(updated => {
-      setHocSinh(prev => prev.map(h => h.id === id ? updated : h));
-      setEditId(null);
-      setTen(""); setDiemA(""); setDiemB(""); setDiemC("");
+      body: JSON.stringify({ ten: tenMoi, diemA, diemB, diemC })
     });
+    const updated = await res.json();
+    setHocSinh(prev => prev.map(h => h.id === id ? updated : h));
+    setEditId(null); setTenMoi(""); setDiemA(""); setDiemB(""); setDiemC("");
   };
 
   return (
-    <div className="container">
-      <h1>Kết quả học tập</h1>
+    <div className="card">
+      <h2>Kết quả học tập</h2>
       <input placeholder="Tìm kiếm..." value={search} onChange={e => setSearch(e.target.value)} />
-      <form onSubmit={handleAdd}>
-        <input placeholder="Tên" value={ten} onChange={e => setTen(e.target.value)} />
-        <input type="number" placeholder="Điểm A" value={diemA} onChange={e => setDiemA(e.target.value)} />
-        <input type="number" placeholder="Điểm B" value={diemB} onChange={e => setDiemB(e.target.value)} />
-        <input type="number" placeholder="Điểm C" value={diemC} onChange={e => setDiemC(e.target.value)} />
-        <button type="submit">Thêm</button>
-      </form>
-
+      <div className="form">
+        <input placeholder="Tên học sinh" value={tenMoi} onChange={e => setTenMoi(e.target.value)} />
+        <input placeholder="Điểm A" type="number" step="0.1" value={diemA} onChange={e => setDiemA(e.target.value)} />
+        <input placeholder="Điểm B" type="number" step="0.1" value={diemB} onChange={e => setDiemB(e.target.value)} />
+        <input placeholder="Điểm C" type="number" step="0.1" value={diemC} onChange={e => setDiemC(e.target.value)} />
+        {editId ? (
+          <button onClick={() => handleSave(editId)}>Lưu</button>
+        ) : (
+          <button onClick={handleAdd}>Thêm</button>
+        )}
+      </div>
       <table>
         <thead>
-          <tr><th>Học sinh</th><th>A</th><th>B</th><th>C</th><th>Hành động</th></tr>
+          <tr><th>Tên</th><th>A</th><th>B</th><th>C</th><th>Hành động</th></tr>
         </thead>
         <tbody>
           {hocSinh.map(hs => (
             <tr key={hs.id}>
-              <td>{editId===hs.id ? <input value={ten} onChange={e=>setTen(e.target.value)}/> : hs.ten}</td>
-              <td>{editId===hs.id ? <input value={diemA} onChange={e=>setDiemA(e.target.value)}/> : hs.diemA}</td>
-              <td>{editId===hs.id ? <input value={diemB} onChange={e=>setDiemB(e.target.value)}/> : hs.diemB}</td>
-              <td>{editId===hs.id ? <input value={diemC} onChange={e=>setDiemC(e.target.value)}/> : hs.diemC}</td>
+              <td>{hs.ten}</td>
+              <td>{hs.diemA}</td>
+              <td>{hs.diemB}</td>
+              <td>{hs.diemC}</td>
               <td>
-                {editId===hs.id ? <button onClick={()=>handleSave(hs.id)}>Lưu</button> :
-                  <>
-                    <button onClick={()=>handleEdit(hs)}>Sửa</button>
-                    <button onClick={()=>handleDelete(hs.id)}>Xóa</button>
-                  </>}
+                <button onClick={() => handleEdit(hs)}>Sửa</button>
+                <button onClick={() => handleDelete(hs.id)}>Xóa</button>
               </td>
             </tr>
           ))}
